@@ -49,3 +49,25 @@ cursor_put_char:
 .done:
     popa
     ret;offset = (y * 80 + x) * 2
+
+cursor_backspace:
+    pusha
+
+    ; If at start of screen (0,0), do nothing
+    cmp byte [cursor_x], 0
+    jne .dec_x
+
+    cmp byte [cursor_y], 0
+    je .done
+
+    ; move up a line
+    dec byte [cursor_y]
+    mov byte [cursor_x], 79   ; end of previous line
+    jmp .done
+
+.dec_x:
+    dec byte [cursor_x]
+
+.done:
+    popa
+    ret

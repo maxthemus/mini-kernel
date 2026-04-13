@@ -18,8 +18,39 @@ start:
 
 	call fill_blue_screen
 	call cursor_init
-	mov esi, wel32Msg 	; Setting PM welcome message to be printed
-	call Print32		; Printing PM Welcome message
+	mov edi, wel32Msg 	; Setting PM welcome message to be printed
+	mov ecx, wel32MsgLen ; Length of the message
+	call terminal_write	; Printing PM Welcome message
+	call cursor_newline
+	mov edi, wel32Msg 	; Setting PM welcome message to be printed
+	call terminal_write_string ; Testing terminal_write_string with null-terminated string
+	mov edi, wel32Msg 	; Setting PM welcome message to be printed
+	mov ecx, 0x05
+	call terminal_writeln ; Testing terminal_writeln with null-terminated string
+
+	call terminal_backspace
+	call terminal_backspace
+	call terminal_backspace
+	mov al, 'A'
+	call terminal_putchar ; Testing terminal_putchar with null-terminated string
+
+	call terminal_backspace
+	call terminal_backspace
+	call terminal_backspace
+	mov al, 'A'
+	call terminal_putchar ; Testing terminal_putchar with null-terminated string
+
+		call terminal_backspace
+	call terminal_backspace
+	call terminal_backspace
+	mov al, 'A'
+	call terminal_putchar ; Testing terminal_putchar with null-terminated string
+
+	call terminal_backspace
+	call terminal_backspace
+	call terminal_backspace
+	mov al, 'A'
+	call terminal_putchar ; Testing terminal_putchar with 
 
 	cli
 	hlt
@@ -42,26 +73,13 @@ fill_blue_screen:
     ret
 
 
-; Sub routine to print message in 32 bit protected mode
-Print32:
-	pusha 
-.repeat:
-	lodsb
-	or al, al
-	jz .done
-
-	call cursor_put_char
-
-	jmp .repeat
-.done:
-	popa
-	ret
-
-
 %include "cursor.asm"
+%include "terminal.asm"
 
 
 wel32Msg db "Testing cursor", 0
+; wel32MsgLen equ $ - wel32Msg
+wel32MsgLen equ 5
 
 section .bss
 stack_bottom:
