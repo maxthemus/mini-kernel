@@ -30,9 +30,78 @@ start:
 	lidt [idtr]
 
 	sti
-	main:
+
+  call init_mem
+  call enable_vaddr
+
+  ; Shouldn't get here because of far jump in enable_vaddr
+  jmp freeze
+
+
+main:
+  ; call fill_green_screen
+  sti
+
+  ; First we need to set our bitmap for memory allocated 
+  ; Currently we have kernel code [org 0x90000] index 44
+  ; and we have bootloader [org 0x7c00]  index 7
+  mov eax, 7
+  call set_bit
+
+  mov eax, 44
+  call set_bit
+
+  call alloc_page
+  call print_eax_hex
+  call cursor_newline
+  call alloc_page
+  call print_eax_hex
+    call cursor_newline
+  call alloc_page
+  call print_eax_hex
+
+
+
+
+main_loop:
 	hlt
-	jmp main
+	jmp main_loop
+
+
+free:
+  jmp main_loop
+
+used:
+  call fill_green_screen
+  jmp main_loop
+
+print_eax_hex:
+    pusha
+
+    mov ecx, 8        ; 8 hex digits
+
+.loop:
+    rol eax, 4        ; rotate next nibble into low 4 bits
+    mov ebx, eax
+    and ebx, 0xF
+
+    cmp bl, 9
+    jg .letter
+
+    add bl, '0'
+    jmp .print
+
+.letter:
+    add bl, 'A' - 10
+
+.print:
+    mov al, bl
+    call terminal_putchar
+
+    loop .loop
+
+    popa
+    ret
 
 	;sti
  	; cli
@@ -86,16 +155,16 @@ start:
 
 
 fill_green_screen:
-	mov edi, 0xb8000 ; Vga memeory start address
-	mov ecx, 2000 ; 80 * 25 cells
-	mov al, ' '          ; space character
-    mov ah, 0xA9         ; white text on blue background
+  mov edi, 0xb8000 ; Vga memeory start address
+  mov ecx, 2000 ; 80 * 25 cells
+  mov al, ' '          ; space character
+  mov ah, 0xA9         ; white text on blue background
 .loop:
-    mov [edi], ax        ; write char + color
-    add edi, 2
-    loop .loop
+  mov [edi], ax        ; write char + color
+  add edi, 2
+  loop .loop
 
-    ret
+  ret
 
 
 
@@ -277,6 +346,7 @@ freeze:
 %include "cursor.asm"
 %include "terminal.asm"
 ;%include "interrupt.asm"
+%include "mem.asm"
 
 
 section .data
