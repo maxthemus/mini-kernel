@@ -268,21 +268,6 @@ unmap_page:
   ret
 
 
-;find_free_page:
-;    mov ecx, 0              ; byte index
-
-;.loop:
-;    cmp ecx, bitmap_size
-;    je none_found
-
-;    mov al, [bitmap + ecx]
-;    cmp al, 0xFF            ; all used?
-;    je next
-
-    ; found free bit inside this byte
-    ; now scan bits  
-
-
 section .bss
 align 4096
   
@@ -296,7 +281,6 @@ align 4
 bitmap:
   resb 512 ; supports 4096 pages
 
+bitmap_size equ 4096
 
 
-section .data
-bitmap_size dw 4096

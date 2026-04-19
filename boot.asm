@@ -138,7 +138,7 @@ start:
 	pms db "Now, Enabling and Jumping to protected mode...", 0x0D, 0x0A, 0
 
 [BITS 32]
-wel32Msg db "Welcome to the protected world!", 0
+wel32Msg db "Welcomes to the protected world!", 0
 
 ; ENTRY Point/subroutine for Protected mode
 PmodeEntry:

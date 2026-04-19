@@ -42,6 +42,10 @@ main:
     ; call fill_green_screen
     sti
 
+    mov esi, wel32Msg 	; Setting PM welcome message to be printed
+	call terminal_write_string	; Printing PM Welcome message
+    call cursor_newline
+
     ; First we need to set our bitmap for memory allocated 
     ; Currently we have kernel code [org 0x90000] index 44
     ; and we have bootloader [org 0x7c00]  index 7
@@ -61,16 +65,17 @@ main:
     call print_eax_hex
     call cursor_newline
 
+    
+
     ; Testing mapping page
     mov eax, 0xFF000
     mov ebx, 0xb8000
     mov ecx, 0x3
-    call map_page
-    call print_eax_hex
-
-    ;call fill_mapped_purple_screen
-    mov byte [0xFF000], 'A'
-    mov al, [0xFF000]
+    ; call map_page
+    ; call print_eax_hex
+    ; call fill_mapped_purple_screen
+    mov eax, [0xFF800000]
+    call fill_green_screen
 
 
 main_loop:
@@ -202,173 +207,12 @@ print_counter:
     popa
     ret
 
-
-
-
-; PIC REMAP
-; IRQ0-7  => INT 32-39
-; IRQ8-15 => INT 40-47
-pic_remap:
-    mov al, ICW1_INIT | ICW1_ICW4
-    out PIC1_COMMAND, al
-    out PIC2_COMMAND, al
-
-    mov al, 32
-    out PIC1_DATA, al
-
-    mov al, 40
-    out PIC2_DATA, al
-
-    mov al, 4
-    out PIC1_DATA, al
-
-    mov al, 2
-    out PIC2_DATA, al
-
-    mov al, ICW4_8086
-    out PIC1_DATA, al
-    out PIC2_DATA, al
-
-    ; unmask timer + keyboard only
-    mov al, 11111100b
-    out PIC1_DATA, al
-
-    mov al, 11111111b
-    out PIC2_DATA, al
-
-    ret
-
-
-idt_init:
-
-    ; clear table
-    mov edi, idt
-    mov ecx, 256*8/4
-    xor eax, eax
-    rep stosd
-
-	mov ecx,256
-    xor ebx,ebx
-.fill:
-	; Fill with stubs
-	mov eax, default_int
-    call idt_set_gate
-    inc ebx
-    loop .fill
-
-    ; exceptions
-    mov eax, isr0
-    mov ebx, 0
-    call idt_set_gate
-
-    mov eax, isr13
-    mov ebx, 13
-    call idt_set_gate
-
-    ; timer irq
-    mov eax, irq0
-    mov ebx, 32
-    call idt_set_gate
-
-    ; keyboard irq
-    mov eax, irq1
-    mov ebx, 33
-    call idt_set_gate
-    
-    ret
-
-
-; idt_set_gate
-; eax = handler address
-; ebx = vector
-idt_set_gate:
-    pusha
-
-    mov edi, idt
-    mov ecx, ebx
-    shl ecx, 3
-    add edi, ecx
-
-    mov word [edi], ax
-    mov word [edi+2], 0x08
-    mov byte [edi+4], 0
-    mov byte [edi+5], 10001110b
-    shr eax, 16
-    mov word [edi+6], ax
-
-    popa
-    ret
-
-;ISR handlers
-isr0:
-    cli
-    pusha
-
-    popa
-    iretd
-
-; GPF pushes error code
-isr13:
-    cli
-    add esp, 4
-	pusha
-	popa
-	iretd
-
-; IRQ handlers
-; Timer handler
-irq0:
-    pusha
-
-    mov al, 0x20
-    out 0x20, al
-
-    popa
-    iretd
-
-irq1:
-    pusha
-
-	in al, 0x60
-
-	; ignoring relase key
-	test al, 0x80
-	jnz .done
-
-	; Convertin from scancode to ascii
-	movzx ebx, al
-	mov al, [scancode_table + ebx]
-
-	; Ignoring unmapped keys
-	cmp al, 0
-	je .done
-
-	call terminal_putchar 
-.done:
-    mov al, 0x20
-    out 0x20, al
-
-    popa
-	iretd
-
-default_int:
-    cli
-	pusha
-
-	popa 
-	iretd
-
-
-.hang:
-    hlt
-    jmp .hang
-
 freeze:
 	jmp freeze
 
 %include "cursor.asm"
+%include "interrupt.asm"
 %include "terminal.asm"
-;%include "interrupt.asm"
 %include "mem.asm"
 
 
@@ -376,6 +220,12 @@ section .data
 wel32Msg db "Testing cursor", 0
 ; wel32MsgLen equ $ - wel32Msg
 wel32MsgLen equ 5
+
+idtr:
+	dw idt_end - idt - 1
+	dd idt
+
+page_fault_msg db "Page fault at address: ", 0
 
 PIC1_COMMAND equ 0x20
 PIC1_DATA equ 0x21
@@ -385,11 +235,6 @@ PIC2_DATA equ 0xA1
 ICW1_INIT equ 0x10
 ICW1_ICW4 equ 0x01
 ICW4_8086 equ 0x01
-
-
-idtr:
-	dw idt_end - idt - 1
-	dd idt
 
 scancode_table:
 db 0              ; 0x00
@@ -450,14 +295,15 @@ times 128 - ($ - scancode_table) db 0
 
 section .bss
 align 16
-idt:
-resb 256*8 ; 256 entries, each 8 bytes
-idt_end:
-
-align 16
 stack_bottom:
     resb 4096
 stack_top:
 
+align 16
+idt:
+resb 256*8 ; 256 entries, each 8 bytes
+idt_end:
+
 cursor_x resb 1
 cursor_y resb 1
+
