@@ -59,16 +59,18 @@ main:
     call cursor_newline
     call alloc_page
     call print_eax_hex
+    call cursor_newline
 
     ; Testing mapping page
-    ; mov eax, 0xFF000
-    ; mov ebx, 0xb8000
-    ; mov ecx, 0x3
-    ; call map_page
-    ; call print_eax_hex
+    mov eax, 0xFF000
+    mov ebx, 0xb8000
+    mov ecx, 0x3
+    call map_page
+    call print_eax_hex
 
-    ; mov byte [0xFF000], 'A'
-    ; mov al, [0xFF000]
+    ;call fill_mapped_purple_screen
+    mov byte [0xFF000], 'A'
+    mov al, [0xFF000]
 
 
 main_loop:

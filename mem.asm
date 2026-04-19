@@ -155,8 +155,9 @@ map_page:
     ; EBX = phys
     ; ECX = flags
 
+  push ebx
+
     mov esi, eax
-    mov edi, ebx
     mov edx, ecx
 
     ; -------------------------
@@ -208,13 +209,16 @@ map_page:
     ; -------------------------
     ; write PTE
     ; -------------------------
-    mov ebx, edi
+    mov ebx, [esp]
+    and ebx, 0xFFFFF000
     or ebx, edx
 
     mov [edi + eax*4], ebx
 
     ; flush
     invlpg [esi]
+
+    pop ebx
 
     ret
 
