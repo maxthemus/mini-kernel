@@ -39,50 +39,51 @@ start:
 
 
 main:
-  ; call fill_green_screen
-  sti
+    ; call fill_green_screen
+    sti
 
-  ; First we need to set our bitmap for memory allocated 
-  ; Currently we have kernel code [org 0x90000] index 44
-  ; and we have bootloader [org 0x7c00]  index 7
-  mov eax, 7
-  call set_bit
+    ; First we need to set our bitmap for memory allocated 
+    ; Currently we have kernel code [org 0x90000] index 44
+    ; and we have bootloader [org 0x7c00]  index 7
+    ; mov eax, 7
+    ; call set_bit
 
-  mov eax, 44
-  call set_bit
+    ; mov eax, 44
+    ; call set_bit
 
-  call alloc_page
-  call print_eax_hex
-  call cursor_newline
-  call alloc_page
-  call print_eax_hex
+    call alloc_page
+    call print_eax_hex
     call cursor_newline
-  call alloc_page
-  call print_eax_hex
+    call alloc_page
+    call print_eax_hex
+    call cursor_newline
+    call alloc_page
+    call print_eax_hex
 
+    ; Testing mapping page
+    ; mov eax, 0xFF000
+    ; mov ebx, 0xb8000
+    ; mov ecx, 0x3
+    ; call map_page
+    ; call print_eax_hex
 
+    ; mov byte [0xFF000], 'A'
+    ; mov al, [0xFF000]
 
 
 main_loop:
 	hlt
 	jmp main_loop
 
-
-free:
-  jmp main_loop
-
-used:
-  call fill_green_screen
-  jmp main_loop
-
 print_eax_hex:
     pusha
 
-    mov ecx, 8        ; 8 hex digits
+    mov edx, eax      ; copy value
+    mov ecx, 8
 
 .loop:
-    rol eax, 4        ; rotate next nibble into low 4 bits
-    mov ebx, eax
+    rol edx, 4
+    mov ebx, edx
     and ebx, 0xF
 
     cmp bl, 9
@@ -166,8 +167,17 @@ fill_green_screen:
 
   ret
 
+fill_mapped_purple_screen:
+  mov edi, 0xFF000 ; Vga memeory start address
+  mov ecx, 2000 ; 80 * 25 cells
+  mov al, ' '          ; space character
+  mov ah, 0xA9         ; purple background
+.loop:
+  mov [edi], ax        ; write char + color
+  add edi, 2
+  loop .loop
 
-
+  ret
 
 fill_blue_screen:
 	mov edi, 0xb8000 ; Vga memeory start address
@@ -180,6 +190,17 @@ fill_blue_screen:
     loop .loop
 
     ret
+
+print_counter:
+    pusha
+    mov eax, ecx
+    call print_eax_hex
+    call cursor_newline
+
+    popa
+    ret
+
+
 
 
 ; PIC REMAP

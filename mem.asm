@@ -118,7 +118,6 @@ test_bit:
   ret
 
 alloc_page:
-    pusha
     mov ecx, 0
 
 .loop:
@@ -132,9 +131,8 @@ alloc_page:
     call set_bit
     pop eax
 
+    mov eax, ecx
     shl eax, 12
-    mov [esp + 28], eax
-    popa
     ret
 
 .next:
@@ -142,9 +140,127 @@ alloc_page:
     cmp ecx, bitmap_size
     jne .loop
 
-    call freeze
+.freeze:
+    call .freeze
 
 free_page:
+  ; eax = page index to free
+  pusha 
+  call clear_bit  
+  popa
+  ret
+
+map_page:
+    ; EAX = virt
+    ; EBX = phys
+    ; ECX = flags
+
+    mov esi, eax
+    mov edi, ebx
+    mov edx, ecx
+
+    ; -------------------------
+    ; dir index
+    ; -------------------------
+    mov eax, esi
+    shr eax, 22
+    mov ebx, eax
+
+    ; -------------------------
+    ; get PDE
+    ; -------------------------
+    mov eax, [page_directory + ebx*4]
+    test eax, 1
+    jnz .pde_ok
+
+    ; -------------------------
+    ; allocate page table
+    ; -------------------------
+    call alloc_page        ; EAX = phys page for page table
+
+    push eax               ; save page table base
+
+    mov edi, eax
+    xor eax, eax
+    mov ecx, 1024
+    rep stosd              ; clear page table
+
+    pop eax                ; restore page table base
+
+    or eax, 0x003          ; present + writable
+    mov [page_directory + ebx*4], eax
+
+.pde_ok:
+    ; -------------------------
+    ; reload page table base
+    ; -------------------------
+    mov eax, [page_directory + ebx*4]
+    and eax, 0xFFFFF000
+    mov edi, eax
+
+    ; -------------------------
+    ; table index
+    ; -------------------------
+    mov eax, esi
+    shr eax, 12
+    and eax, 0x3FF
+
+    ; -------------------------
+    ; write PTE
+    ; -------------------------
+    mov ebx, edi
+    or ebx, edx
+
+    mov [edi + eax*4], ebx
+
+    ; flush
+    invlpg [esi]
+
+    ret
+
+unmap_page:
+  ; EAX = virt
+  pusha
+
+  mov esi, eax
+
+  ; dir index
+  mov eax, esi
+  shr eax, 22
+  mov ebx, eax
+
+  ; get PDE
+  mov eax, [page_directory + ebx*4]
+  test eax, 1
+  jz .unmap_done
+
+  ; page table base
+  and eax, 0xFFFFF000
+  mov edi, eax
+
+  ; table index
+  mov eax, esi
+  shr eax, 12
+  and eax, 0x3FF
+  mov ebx, eax
+
+  ; get PTE
+  mov eax, [edi + ebx*4]
+  test eax, eax
+  jz .skip_free
+
+  and eax, 0xFFFFF000
+  call free_page
+
+.skip_free:
+  ; clear PTE
+  mov dword [edi + ebx*4], 0
+
+  ; flush TLB
+  invlpg [esi]
+
+.unmap_done:
+  popa
   ret
 
 
