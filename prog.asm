@@ -1,6 +1,9 @@
-[org 0x90000]
 
 [bits 32]
+
+global start
+
+extern kernel_main
 
 jmp start
 
@@ -42,6 +45,7 @@ main:
     ; call fill_green_screen
     sti
 
+   
     mov esi, wel32Msg 	; Setting PM welcome message to be printed
 	call terminal_write_string	; Printing PM Welcome message
     call cursor_newline
@@ -74,8 +78,8 @@ main:
     ; call map_page
     ; call print_eax_hex
     ; call fill_mapped_purple_screen
-    mov eax, [0xFF800000]
-    call fill_green_screen
+
+	call kernel_main
 
 
 main_loop:
@@ -307,3 +311,6 @@ idt_end:
 cursor_x resb 1
 cursor_y resb 1
 
+
+; Section to tell linker stack no exec
+section .note.GNU-stack noalloc noexec nowrite

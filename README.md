@@ -27,3 +27,13 @@ https://github.com/chuang76/x86-bootloader/blob/main/switch.asm
 
 Cheat sheet for x86
 https://ggbaker.ca/295/x86.html
+
+Calling conventions between C and ASM
+-  cdecl
+https://gist.github.com/HACKE-RC/6303360bf9cbbb77992e4db0e1b672cd
+
+Inorder to call a asm from C you must:
+- Declare function def.
+AND
+- have label "global <name>" in asm file.
+

@@ -21,6 +21,9 @@ global terminal_clear
 terminal_write:
     pusha 
 
+    mov esi, [esp + 36]
+    mov ecx, [esp + 40]
+
 .loop:
     cmp ecx, 0
     je .done
