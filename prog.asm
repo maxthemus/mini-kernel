@@ -59,15 +59,15 @@ main:
     ; mov eax, 44
     ; call set_bit
 
-    call alloc_page
-    call print_eax_hex
-    call cursor_newline
-    call alloc_page
-    call print_eax_hex
-    call cursor_newline
-    call alloc_page
-    call print_eax_hex
-    call cursor_newline
+    ;call alloc_page
+    ;call print_eax_hex
+   ; call cursor_newline
+   ; call alloc_page
+   ; call print_eax_hex
+    ;call cursor_newline
+    ;call alloc_page
+    ;call print_eax_hex
+    ;call cursor_newline
 
     
 
@@ -108,6 +108,7 @@ print_eax_hex:
 
 .print:
     mov al, bl
+    push eax
     call terminal_putchar
 
     loop .loop

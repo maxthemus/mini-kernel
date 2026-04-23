@@ -12,6 +12,7 @@ global terminal_write
 global terminal_write_string
 global terminal_writeln
 global terminal_putchar
+global terminal_pchar
 global terminal_newline
 global terminal_backspace
 global terminal_clear
@@ -69,10 +70,13 @@ terminal_writeln:
 
 ;terminal_putchar(AL)
 terminal_putchar:
-    pusha
     call cursor_put_char
-    popa
     ret
+
+terminal_pchar:
+  mov al, [esp + 4]
+  call cursor_put_char
+  ret
 
 ;terminal_newline()
 terminal_newline:
