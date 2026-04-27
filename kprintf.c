@@ -35,7 +35,10 @@ void kprintf(char *str, ...) {
           }
         }
         argPtr++;
-      } 
+      } else if (*p == 'c') {
+        char c = *(char *)argPtr++;
+        terminal_pchar(c);
+      }
     } else {
       // Handling special characters
       if (*p == '\n') {

@@ -2,6 +2,7 @@
 [bits 32]
 
 global start
+global scancode_table
 
 extern kernel_main
 
@@ -219,6 +220,7 @@ freeze:
 %include "interrupt.asm"
 %include "terminal.asm"
 %include "mem.asm"
+%include "port.asm"
 
 
 section .data

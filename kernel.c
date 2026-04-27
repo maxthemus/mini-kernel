@@ -1,5 +1,6 @@
 #include "kheap.h"
 #include "kprintf.h"
+#include "keyboard.h"
 
 void terminal_write(char *addr, unsigned long int length);
 void terminal_pchar(char c);
@@ -39,5 +40,10 @@ void kernel_main(void) {
   char *charPtr_4 = (char *)kmalloc(sizeof(char) * 13);
   k_heap_dump();
 
-
+  while (1) {
+    if (has_char()) {
+      char c = kb_pop_char();
+      kprintf("%c", c);
+    }
+  }
 }

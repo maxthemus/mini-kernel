@@ -1,5 +1,7 @@
 [bits 32]
 
+extern i_keyboard
+
 section .text
 ; PIC REMAP
 ; IRQ0-7  => INT 32-39
@@ -127,29 +129,32 @@ irq0:
     iretd
 
 irq1:
-    pusha
+  pusha
 
-	in al, 0x60
+  ;in al, 0x60
 
-	; ignoring relase key
-	test al, 0x80
-	jnz .done
+  ; ignoring relase key
+  ;test al, 0x80
+  ;jnz .done
 
-	; Convertin from scancode to ascii
-	movzx ebx, al
-	mov al, [scancode_table + ebx]
+  ; Convertin from scancode to ascii
+  ;movzx ebx, al
+  ;mov al, [scancode_table + ebx]
 
-	; Ignoring unmapped keys
-	cmp al, 0
-	je .done
+  ; Ignoring unmapped keys
+  ;cmp al, 0
+  ;je .done
 
-	call terminal_putchar 
-.done:
-    mov al, 0x20
-    out 0x20, al
+  ;call terminal_putchar 
+;.done:
+  ;mov al, 0x20
+  ;out 0x20, al
+  call i_keyboard
+  mov al, 0x20
+  out 0x20, al
 
-    popa
-	iretd
+  popa
+  iretd
 
 default_int:
     cli
