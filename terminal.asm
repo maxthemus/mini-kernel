@@ -80,9 +80,7 @@ terminal_pchar:
 
 ;terminal_newline()
 terminal_newline:
-    pusha 
     call cursor_newline
-    popa
     ret
 
 

@@ -13,6 +13,7 @@ typedef struct block {
 
 void kmalloc_init(void);
 void *kmalloc (unsigned long size);
-void kfree (char *ptr);
+void kfree (void *ptr);
+void k_heap_dump(void);
 
 #endif // ! HEAP_SIZE

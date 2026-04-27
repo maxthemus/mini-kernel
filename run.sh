@@ -4,9 +4,10 @@ nasm -f bin boot.asm -o boot.bin
 nasm -f elf32 prog.asm -o prog.o
 gcc -m32 -ffreestanding -fno-pie -fno-stack-protector -c kernel.c -o kernel.o
 gcc -m32 -ffreestanding -fno-pie -fno-stack-protector -c kheap.c -o kheap.o
+gcc -m32 -ffreestanding -fno-pie -fno-stack-protector -c kprintf.c -o kprintf.o
 
 # Linking scripts together
-ld -m elf_i386 -T linker.ld -o kernel.elf prog.o kernel.o kheap.o
+ld -m elf_i386 -T linker.ld -o kernel.elf prog.o kernel.o kheap.o kprintf.o
 
 # Building kernel bin
 objcopy -O binary kernel.elf kernel.bin

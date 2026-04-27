@@ -1,28 +1,8 @@
 #include "kheap.h"
-
+#include "kprintf.h"
 
 void terminal_write(char *addr, unsigned long int length);
 void terminal_pchar(char c);
-
-void kprintf(char *str, ...) {
-  // Currently we are only supporting chars
-  char **argPtr = (char**)&str + 1;
-
-  for (char *p = str; *p != '\0'; p++) {
-    if (*p == '%' && *(p+1) != '\0') {
-      p++;
-      // Handle special char
-      if (*p == 'd') {
-        int num = *(int*)argPtr;
-        terminal_pchar((char)('0'+num));
-        argPtr++;
-      }
-
-    } else {
-      terminal_pchar(*p);
-    }
-  }
-}
 
 
 void kernel_main(void) {
@@ -31,11 +11,15 @@ void kernel_main(void) {
 	terminal_write(greetings, len);
 
   char str[] = "a";
-  kprintf("bcccc%d", 2);
+  unsigned long test = 100;
+  kprintf("bcccc%d, %ul", 200, test);
 
   kmalloc_init();
 
   char *charPtr = (char *)kmalloc(sizeof(char) * 13);
+  char *charPtr_1 = (char *)kmalloc(sizeof(char) * 13);
+  char *charPtr_2 = (char *)kmalloc(sizeof(char) * 13);
+  char *charPtr_3 = (char *)kmalloc(sizeof(char) * 13);
   charPtr[0] = 'H';
   charPtr[1] = 'E';
   charPtr[2] = 'L';
@@ -50,4 +34,10 @@ void kernel_main(void) {
   charPtr[11] = '!';
   charPtr[12] = '\0';
   kprintf(charPtr, 12);
+  kfree(charPtr_2);
+  kfree(charPtr_1);
+  char *charPtr_4 = (char *)kmalloc(sizeof(char) * 13);
+  k_heap_dump();
+
+
 }
