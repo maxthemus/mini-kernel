@@ -1,3 +1,5 @@
+#include "kheap.h"
+
 
 void terminal_write(char *addr, unsigned long int length);
 void terminal_pchar(char c);
@@ -31,5 +33,21 @@ void kernel_main(void) {
   char str[] = "a";
   kprintf("bcccc%d", 2);
 
-	while (1) { }
+  kmalloc_init();
+
+  char *charPtr = (char *)kmalloc(sizeof(char) * 13);
+  charPtr[0] = 'H';
+  charPtr[1] = 'E';
+  charPtr[2] = 'L';
+  charPtr[3] = 'L';
+  charPtr[4] = 'O';
+  charPtr[5] = ' ';
+  charPtr[6] = 'W';
+  charPtr[7] = 'O';
+  charPtr[8] = 'R';
+  charPtr[9] = 'L';
+  charPtr[10] = 'D';
+  charPtr[11] = '!';
+  charPtr[12] = '\0';
+  kprintf(charPtr, 12);
 }
