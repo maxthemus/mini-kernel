@@ -15,8 +15,19 @@ unsigned char inb(unsigned int port);
 void i_keyboard(void) {
   unsigned char scancode = inb(0x60);
   char c = scancode_table[scancode];
+
+  // ignore releases
+  if (scancode & 0x80)
+      return;
+
+  if (scancode == 0x1C) {
+    kb_push_char('\n');
+    return;
+  }
+
   if (c) {
     kb_push_char(c);
+    return;
   }
 }
 
