@@ -1,5 +1,6 @@
 #include "kshell.h"
 #include "kprintf.h"
+#include "kheap.h"
 
 // ASM defs
 void terminal_clear(void);
@@ -7,11 +8,13 @@ void cursor_init(void);
 
 int strcmp(const char *buf_one, const char *buf_two);
 void clear_screen(void);
+void k_heap_dump(void);
 
 char in_buffer[K_SHELL_BUFFER_SIZE];
-static int NUM_COMMANDS = 1;
+static int NUM_COMMANDS = 2;
 command_t commands[] = {
   {"clear", clear_screen},
+  {"hdump", k_heap_dump}
 };
 
 volatile unsigned int buf_idx;
