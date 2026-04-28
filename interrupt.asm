@@ -1,6 +1,7 @@
 [bits 32]
 
 extern i_keyboard
+extern i_timer_handler
 
 section .text
 ; PIC REMAP
@@ -121,6 +122,8 @@ isr13:
 ; Timer handler
 irq0:
     pusha
+
+    call i_timer_handler
 
     mov al, 0x20
     out 0x20, al

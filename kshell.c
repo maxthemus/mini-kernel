@@ -1,6 +1,7 @@
 #include "kshell.h"
 #include "kprintf.h"
 #include "kheap.h"
+#include "timer.h"
 
 // ASM defs
 void terminal_clear(void);
@@ -9,12 +10,14 @@ void cursor_init(void);
 int strcmp(const char *buf_one, const char *buf_two);
 void clear_screen(void);
 void k_heap_dump(void);
+void print_ticks(void);
 
 char in_buffer[K_SHELL_BUFFER_SIZE];
-static int NUM_COMMANDS = 2;
+static int NUM_COMMANDS = 3;
 command_t commands[] = {
   {"clear", clear_screen},
-  {"hdump", k_heap_dump}
+  {"hdump", k_heap_dump},
+  {"uptime", print_ticks}
 };
 
 volatile unsigned int buf_idx;
@@ -84,4 +87,10 @@ int strcmp(const char *buf_one, const char *buf_two) {
 void clear_screen(void) {
   terminal_clear();
   cursor_init();
+}
+
+void print_ticks(void) {
+  unsigned long t = get_ticks();
+  unsigned long uptime = t / 100;
+  kprintf("UP: %ul\n", uptime);
 }
