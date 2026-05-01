@@ -123,10 +123,10 @@ isr13:
 irq0:
     pusha
 
-    call i_timer_handler
-
     mov al, 0x20
     out 0x20, al
+
+    call i_timer_handler
 
     popa
     iretd

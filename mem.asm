@@ -32,8 +32,12 @@ init_mem:
   ; Mapping the first page identity mapping the first table
   ; Loop through 1024 entries in pTable mapping to 4K Pages
   ; Incrementing 0 -> 4096 -> 8192 ...
-  mov ecx, 0; Counter set to 0
 
+  mov eax, 0xFEE00000
+  or eax, 0x3
+  mov [first_page_table], eax
+
+mov ecx, 1; Counter set to 0
 .fill_table_entry:
   mov eax, ecx ; Counter set to 0
   shl eax, 12 ; Incrementing by 4096
@@ -44,6 +48,11 @@ init_mem:
   inc ecx
   cmp ecx, 1024
   jne .fill_table_entry
+
+  ;mov eax, 0xFF0000
+  ;mov ebx, 0xFEE00000
+  ;mov ecx, 0x3
+  ;call map_page
 
   popa
   ret

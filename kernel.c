@@ -2,6 +2,8 @@
 #include "kprintf.h"
 #include "keyboard.h"
 #include "kshell.h"
+#include "kproc.h"
+#include "timer.h"
 
 void terminal_write(char *addr, unsigned long int length);
 void terminal_pchar(char c);
@@ -17,6 +19,8 @@ void kernel_main(void) {
   kprintf("bcccc%d, %ul", 200, test);
 
   kmalloc_init();
+  lapic_init();
+
 
   char *charPtr = (char *)kmalloc(sizeof(char) * 13);
   char *charPtr_1 = (char *)kmalloc(sizeof(char) * 13);
@@ -40,6 +44,10 @@ void kernel_main(void) {
   kfree(charPtr_1);
   char *charPtr_4 = (char *)kmalloc(sizeof(char) * 13);
   k_heap_dump();
+
+  schedule_task(0);
+  schedule_task(1);
+  start_task();
 
   // Shell loop
   // Steps

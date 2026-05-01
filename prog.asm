@@ -70,15 +70,16 @@ main:
     ;call print_eax_hex
     ;call cursor_newline
 
-    
-
     ; Testing mapping page
-    mov eax, 0xFF000
-    mov ebx, 0xb8000
-    mov ecx, 0x3
-    ; call map_page
+    ;mov eax, 0xFEE00000
+    ;mov eax, 0xFF0000
+    ;mov ebx, 0xFEE00000
+    ;mov ecx, 0x3
+    ;call map_page
     ; call print_eax_hex
     ; call fill_mapped_purple_screen
+    ;
+    ;call map_page
 
 	call kernel_main
 
