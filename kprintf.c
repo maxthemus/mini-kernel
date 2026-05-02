@@ -2,12 +2,15 @@
 
 void int_to_buffer(int value, char *buf);
 void unsigned_long_to_buffer(unsigned long value, char *buf);
+void unsigned_long_to_buffer_hex(unsigned long value, char *buf);
 void terminal_write(char *addr, unsigned long int length);
 void terminal_pchar(char c);
 
 // ASM functions
 void terminal_newline(void);
 
+// const for hex digit mapping
+static const char hex_digits[] = "0123456789ABCDEF";
 
 void kprintf(char *str, ...) {
   // Currently we are only supporting chars
@@ -38,6 +41,14 @@ void kprintf(char *str, ...) {
       } else if (*p == 'c') {
         char c = *(char *)argPtr++;
         terminal_pchar(c);
+      } else if (*p == 'p') {
+        unsigned long ptr = (unsigned long)(*argPtr);
+        // Now we need to print the hex of the unsigned long
+        unsigned_long_to_buffer_hex(ptr, buffer);
+        for (char *i = buffer; *i != '\0';i++) {
+          terminal_pchar(*i);
+        }
+        argPtr++;
       }
     } else {
       // Handling special characters
@@ -128,4 +139,32 @@ void unsigned_long_to_buffer(unsigned long value, char *buf) {
         start++;
         end--;
     }
+}
+
+
+void unsigned_long_to_buffer_hex(unsigned long value, char *buf) {
+  int i = 2; // starting index is 2 because we prepend string with 0x
+
+  buf[0] = '0';
+  buf[1] = 'x';
+
+  while (value > 0) {
+      int hex_val = value % 16;
+      buf[i++] = hex_digits[hex_val];
+      value /= 16;
+  }
+
+  buf[i] ='\0';
+
+  int start = 2;
+  int end = i -1;
+
+  while (start < end) {
+      char temp = buf[start];
+      buf[start] = buf[end];
+      buf[end] = temp;
+
+      start++;
+      end--;
+  }
 }

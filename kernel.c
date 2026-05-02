@@ -19,7 +19,7 @@ void kernel_main(void) {
   kprintf("bcccc%d, %ul", 200, test);
 
   kmalloc_init();
-  lapic_init();
+  // lapic_init();
 
 
   char *charPtr = (char *)kmalloc(sizeof(char) * 13);
@@ -45,9 +45,13 @@ void kernel_main(void) {
   char *charPtr_4 = (char *)kmalloc(sizeof(char) * 13);
   k_heap_dump();
 
+  kprintf("%ul, %p", (unsigned long)charPtr, charPtr);
+
+  /*
   schedule_task(0);
   schedule_task(1);
   start_task();
+  */
 
   // Shell loop
   // Steps

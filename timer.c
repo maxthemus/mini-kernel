@@ -13,11 +13,9 @@ unsigned int *lapic;
 void clear_interrupt(void);
 
 void i_timer_handler(void) {
-  kprintf("TIMER CALLED");
   ticks++;
   clear_interrupt();
   sched();
-  kprintf("TIMER END");
 }
 
 unsigned long get_ticks(void) {
@@ -31,5 +29,5 @@ void lapic_init() {
 
 void clear_interrupt(void) {
   // run_sti();
-    lapic[EOI] = 0;
+  // lapic[EOI] = 0;
 }
