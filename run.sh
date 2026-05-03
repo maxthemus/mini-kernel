@@ -10,9 +10,10 @@ gcc -m32 -ffreestanding -fno-pie -fno-stack-protector -c keyboard.c -o keyboard.
 gcc -m32 -ffreestanding -fno-pie -fno-stack-protector -c kshell.c -o kshell.o
 gcc -m32 -ffreestanding -fno-pie -fno-stack-protector -c timer.c -o timer.o
 gcc -m32 -ffreestanding -fno-pie -fno-stack-protector -c kproc.c -o kproc.o
+gcc -m32 -ffreestanding -fno-pie -fno-stack-protector -c mem.c -o mem.o
 
 # Linking scripts together
-ld -m elf_i386 -T linker.ld -o kernel.elf prog.o kernel.o kheap.o kprintf.o keyboard.o kshell.o timer.o kproc.o proc.o
+ld -m elf_i386 -T linker.ld -o kernel.elf prog.o kernel.o kheap.o kprintf.o keyboard.o kshell.o timer.o kproc.o proc.o mem.o
 
 # Building kernel bin
 objcopy -O binary kernel.elf kernel.bin

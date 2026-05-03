@@ -4,10 +4,12 @@
 #include "kshell.h"
 #include "kproc.h"
 #include "timer.h"
+#include "mem.h"
 
 void terminal_write(char *addr, unsigned long int length);
 void terminal_pchar(char c);
 
+void *alloc_page(void);
 
 void kernel_main(void) {
 	char greetings[] = "Hello World!";
@@ -46,6 +48,11 @@ void kernel_main(void) {
   k_heap_dump();
 
   kprintf("%ul, %p", (unsigned long)charPtr, charPtr);
+
+  alloc_page();
+  void *page_ptr = alloc_page();
+  kprintf("\nADDR %p\n", page_ptr);
+  print_alloc_pages();
 
   /*
   schedule_task(0);

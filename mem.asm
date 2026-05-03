@@ -15,6 +15,8 @@
 ; Because Offset is 12 bits we can have 4K pages because 2^12 (4096)
 ;
 ;
+global bitmap
+global alloc_page
  
 section .text
 
