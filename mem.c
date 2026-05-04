@@ -1,11 +1,14 @@
+#include "mem.h"
 #include "kprintf.h"
 
 // File is for managing memory for kernel.
 //
 //
 extern unsigned char bitmap[512];
+extern unsigned long page_directory[1024];
+extern unsigned long first_page_table[1024];
+extern unsigned long second_page_table[1024];
 
-unsigned long directory[1024]; // A directory is a 1024 array.
 /* Virtual address
  * 32 Bits -> [31-22 Page directory idx][21-12 Ptable idx][11-0] Offset
  *
@@ -74,6 +77,16 @@ void print_page_dir() {
 
 }
 
+int v_addr_pde_idx(unsigned long v_addr) {
+  return (int)(v_addr >> 22);
+}
+
+int v_addr_pte_idx(unsigned long v_addr) {
+  unsigned long mask = 4095;
+  unsigned long masked = v_addr & mask;
+  return (int)(masked >> 10);
+}
+
 
 void *map_page(unsigned long v_addr, unsigned long phy_addr) {
   // When mapping pages we are going to assume you are a great programmer,
@@ -106,6 +119,34 @@ void *map_page(unsigned long v_addr, unsigned long phy_addr) {
   //Then we need to get page table idx from virtual addr.
   //If page table has entry PANIC I guess.
   //Else create PTE that has physical address with flags.
+  int pde = v_addr_pde_idx(v_addr);
+  int pte = v_addr_pte_idx(v_addr);
+
+  unsigned long *page_directory_entry = (page_directory + pde);
+  if (!(*page_directory_entry & 0x1)) {
+    // Directory doesn't have entry.
+    // Mapping to second page table
+    unsigned long flag_mask = 0xFFFFF000;
+    unsigned long pt_addr = ((unsigned long)second_page_table & flag_mask);
+    pt_addr = pt_addr | 0x3; //Adding p, w/r
+    *page_directory_entry = pt_addr;
+  }  
+
+   
+  unsigned long *page_table_addr = (unsigned long*)((*page_directory_entry) & 0xFFFFF000);
+  unsigned long *page_table_entry = page_table_addr + pte;
+  if ((*page_table_entry) & 0x1) {
+    kprintf("\nPAGE TABLE Entry already exists");
+    return (void*)-1;
+  }
+
+  unsigned long physical_address = phy_addr & 0xFFFFF000;
+  physical_address = physical_address | 0x1B;
+  kprintf("\nPHY: %ul", physical_address);
+  *page_table_entry = physical_address;
+  kprintf("%d, %d", pde, pte);
+
+  return (void*)v_addr;
 }
 
 

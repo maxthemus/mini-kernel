@@ -49,6 +49,14 @@ void kprintf(char *str, ...) {
           terminal_pchar(*i);
         }
         argPtr++;
+      } else if (*p == 'x') {
+        unsigned int num = *(unsigned int*)argPtr;
+        unsigned long larger_num = (unsigned long)num;
+        unsigned_long_to_buffer_hex(larger_num, buffer);
+        for (char *i = buffer; *i != '\0';i++) {
+            terminal_pchar(*i);
+        }
+        argPtr++;
       }
     } else {
       // Handling special characters

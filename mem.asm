@@ -17,6 +17,9 @@
 ;
 global bitmap
 global alloc_page
+global page_directory
+global first_page_table
+global second_page_table
  
 section .text
 
@@ -34,12 +37,7 @@ init_mem:
   ; Mapping the first page identity mapping the first table
   ; Loop through 1024 entries in pTable mapping to 4K Pages
   ; Incrementing 0 -> 4096 -> 8192 ...
-
-  mov eax, 0xFEE00000
-  or eax, 0x3
-  mov [first_page_table], eax
-
-mov ecx, 1; Counter set to 0
+  mov ecx, 0; Counter set to 0
 .fill_table_entry:
   mov eax, ecx ; Counter set to 0
   shl eax, 12 ; Incrementing by 4096
@@ -286,6 +284,9 @@ page_directory:
   resd 1024
   
 first_page_table:
+  resd 1024
+
+second_page_table:
   resd 1024
 
 align 4

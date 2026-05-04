@@ -21,7 +21,6 @@ void kernel_main(void) {
   kprintf("bcccc%d, %ul", 200, test);
 
   kmalloc_init();
-  // lapic_init();
 
 
   char *charPtr = (char *)kmalloc(sizeof(char) * 13);
@@ -54,11 +53,16 @@ void kernel_main(void) {
   kprintf("\nADDR %p\n", page_ptr);
   print_alloc_pages();
 
-  /*
+  unsigned long vaddr = 0x400000;
+  unsigned long physical = 0xFEE00000;
+  void *void_ptr = map_page(vaddr, physical);
+  asm volatile("invlpg (%0)" ::"r"(vaddr) : "memory"); // 2. flush TLB entry
+
+  lapic_init();
+
   schedule_task(0);
   schedule_task(1);
   start_task();
-  */
 
   // Shell loop
   // Steps

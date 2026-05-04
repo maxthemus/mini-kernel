@@ -39,6 +39,7 @@ pic_remap:
 
 
 idt_init:
+    call pic_disable
 
     ; clear table
     mov edi, idt
@@ -119,7 +120,7 @@ isr13:
 	iretd
 
 ; IRQ handlers
-; Timer handler
+; Timer handleinterrupt.asmr
 irq0:
     pusha
 
@@ -181,3 +182,26 @@ isr14:
     popa
     add esp, 4     ; discard error code
     call freeze
+
+pic_disable:
+    ; Remap PIC first (to avoid conflicts with CPU exceptions 0-15)
+    mov al, ICW1_INIT | ICW1_ICW4
+    out PIC1_COMMAND, al
+    out PIC2_COMMAND, al
+    mov al, 32           ; remap still needed
+    out PIC1_DATA, al
+    mov al, 40
+    out PIC2_DATA, al
+    mov al, 4
+    out PIC1_DATA, al
+    mov al, 2
+    out PIC2_DATA, al
+    mov al, ICW4_8086
+    out PIC1_DATA, al
+    out PIC2_DATA, al
+
+    ; Mask ALL PIC interrupts
+    mov al, 0xFF
+    out PIC1_DATA, al    ; mask all IRQs 0-7
+    out PIC2_DATA, al    ; mask all IRQs 8-15
+    ret
