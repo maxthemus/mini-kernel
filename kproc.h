@@ -27,15 +27,19 @@ void switch_proc(context **old, context *new);
 void save_proc(trap_frame *proc);
 void sched(void);
 
+
 typedef struct {
-  unsigned long pid;
-  trap_frame trap;
-  unsigned long run_tick_count;
-  context *context;
-}proc;
+    unsigned long esp;
+    void *stack_base;
+    int pid;
+    int run_tick_count;
+} proc;
 
 
 void schedule_task(int idx);
 void start_task(void);
+void store_current_proc(unsigned long stackAddr);
+unsigned long load_next_proc(void);
+unsigned long schedule(unsigned long current_esp);
 
 #endif // !DEBUG

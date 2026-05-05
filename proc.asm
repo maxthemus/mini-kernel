@@ -2,6 +2,7 @@
 
 global switch_proc
 global run_sti
+global start_tasks:
 
 section .text
 switch_proc:
@@ -31,3 +32,11 @@ run_sti:
   sti
   ret
 
+
+start_tasks:
+    ; void start_tasks(unsigned long stackPtr);
+    mov eax, [esp + 4]
+    mov esp, eax
+
+    popa
+    iretd

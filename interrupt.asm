@@ -2,6 +2,9 @@
 
 extern i_keyboard
 extern i_timer_handler
+extern schedule
+
+global clear_timer_interrupt
 
 section .text
 ; PIC REMAP
@@ -39,8 +42,6 @@ pic_remap:
 
 
 idt_init:
-    call pic_disable
-
     ; clear table
     mov edi, idt
     mov ecx, 256*8/4
@@ -127,7 +128,14 @@ irq0:
     mov al, 0x20
     out 0x20, al
 
-    call i_timer_handler
+    mov eax, esp
+    push eax
+    call schedule
+    add esp, 4
+
+    
+
+    mov esp, eax
 
     popa
     iretd
@@ -183,25 +191,7 @@ isr14:
     add esp, 4     ; discard error code
     call freeze
 
-pic_disable:
-    ; Remap PIC first (to avoid conflicts with CPU exceptions 0-15)
-    mov al, ICW1_INIT | ICW1_ICW4
-    out PIC1_COMMAND, al
-    out PIC2_COMMAND, al
-    mov al, 32           ; remap still needed
-    out PIC1_DATA, al
-    mov al, 40
-    out PIC2_DATA, al
-    mov al, 4
-    out PIC1_DATA, al
-    mov al, 2
-    out PIC2_DATA, al
-    mov al, ICW4_8086
-    out PIC1_DATA, al
-    out PIC2_DATA, al
-
-    ; Mask ALL PIC interrupts
-    mov al, 0xFF
-    out PIC1_DATA, al    ; mask all IRQs 0-7
-    out PIC2_DATA, al    ; mask all IRQs 8-15
-    ret
+clear_timer_interrupt:
+  mov al, 0x20
+  out 0x20, al
+  ret
