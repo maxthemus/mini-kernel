@@ -11,6 +11,23 @@ void terminal_pchar(char c);
 
 void *alloc_page(void);
 
+void task_a(void) {
+  while (1) {
+    //run_sti();
+    kprintf("A");
+    for (int i = 0; i < 999999; i++) {}
+  }
+}
+
+
+void task_b(void) {
+  while (1) {
+    //run_sti();
+    kprintf("B");
+    for (int i = 0; i < 999999; i++) {}
+  }
+}
+
 void kernel_main(void) {
 	char greetings[] = "Hello World!";
 	unsigned long int len = 12;
@@ -22,8 +39,9 @@ void kernel_main(void) {
 
   kmalloc_init();
 
-  schedule_task(0);
-  schedule_task(1);
+  init_scheduler();
+  schedule_task(task_a);
+  schedule_task(task_b);
   start_task();
 
   // Shell loop

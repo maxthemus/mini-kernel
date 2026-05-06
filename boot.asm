@@ -64,7 +64,7 @@ Print16:
 
 load:
     mov ah, 0x02
-    mov al, 13          ; IMPORTANT: load more sectors
+    mov al, 14          ; IMPORTANT: load more sectors
     mov ch, 0
     mov cl, 2
     mov dh, 0

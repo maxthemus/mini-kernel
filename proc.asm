@@ -3,6 +3,7 @@
 global switch_proc
 global run_sti
 global start_tasks:
+global halt_system
 
 section .text
 switch_proc:
@@ -40,3 +41,7 @@ start_tasks:
 
     popa
     iretd
+
+halt_system:
+  hlt
+  ret
