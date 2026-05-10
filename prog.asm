@@ -3,7 +3,9 @@
 
 global start
 global scancode_table
+global jump_usermode
 
+extern kernel_setup
 extern kernel_main
 
 jmp start
@@ -75,7 +77,8 @@ main:
     ;
     ;call map_page
 
-	call kernel_main
+	call kernel_setup
+    call kernel_main
 
 
 main_loop:
@@ -207,6 +210,29 @@ print_counter:
 
     popa
     ret
+
+; jump_usermode.asm
+global jump_usermode
+jump_usermode:
+    mov eax, [esp+4]    ; user esp
+    mov ecx, [esp+8]    ; user eip
+
+    push eax            ; save user esp before clobbering ax
+    
+    mov ax, 0x23
+    mov ds, ax
+    mov es, ax
+    mov fs, ax
+    mov gs, ax
+
+    pop eax             ; restore user esp
+
+    push 0x23           ; user ss
+    push eax            ; user esp
+    push 0x202          ; eflags
+    push 0x1B           ; user cs
+    push ecx            ; eip
+    iretd
 
 freeze:
 	jmp freeze

@@ -1,8 +1,9 @@
 #include "kproc.h"
 #include "kheap.h"
 #include "kprintf.h"
+#include "gdt.h"
 
-
+extern tss_t tss;
 void run_sti(void);
 void start_tasks(unsigned long stackPtr);
 void halt_system(void);
@@ -65,6 +66,7 @@ unsigned long schedule(unsigned long current_esp) {
       p->task_state = TASK_RUNNING;
       
       current_idx = idx;
+      tss.esp0 = cur_p->kernel_stack_base;
       return p->esp;
     }
   } 
@@ -72,6 +74,7 @@ unsigned long schedule(unsigned long current_esp) {
   kprintf("BAD IDLE");
   // All procs are currently blocked or no tasks in loop
   idle_task->task_state = TASK_RUNNING;
+  tss.esp0 = cur_p->kernel_stack_base;
   return idle_task->esp;
 }
 
@@ -80,6 +83,7 @@ void schedule_task(void (*func)(void)) {
 
     void *stack = kmalloc(STACK_SIZE);
     unsigned long *sp = (unsigned long *)((char *)stack + STACK_SIZE);
+    t->kernel_stack_base = (unsigned long)sp;
 
     // -------------------------
     // IRET frame
@@ -122,6 +126,7 @@ void init_scheduler(void) {
 
   void *stack = kmalloc(STACK_SIZE);
   unsigned long *sp = (unsigned long *)((char *)stack + STACK_SIZE);
+  t->kernel_stack_base = (unsigned long)sp;
 
   // -------------------------
   // IRET frame
@@ -175,3 +180,6 @@ void wake_up_tasks(enum B_reasons reason) {
   }
 }
 
+proc* get_proc(int idx) {
+  return &tasks[idx];
+}

@@ -21,6 +21,7 @@ typedef struct {
     int run_tick_count;
     enum P_state task_state;
     enum B_reasons blocked_reason;
+    unsigned long kernel_stack_base;
 } proc;
 
 
@@ -35,5 +36,7 @@ void block_current_task(enum B_reasons reason);
 void wake_up_tasks(enum B_reasons reason);
 void disable_interrupts(void);
 void enable_interrupts(void);
+proc *get_proc(int idx);
+
 
 #endif // !DEBUG

@@ -42,6 +42,10 @@ unsigned long syscall_handler_c(trap_frame *tf) {
     return schedule(current_esp);  
   } 
 
+  if (tf->trap_no == 3) {
+    kprintf("SYSCALL EXTRA");
+  }
+
 
   return (unsigned long)tf; // Returning current tf
 }

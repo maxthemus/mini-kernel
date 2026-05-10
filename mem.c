@@ -1,6 +1,8 @@
 #include "mem.h"
 #include "kprintf.h"
 
+
+
 // File is for managing memory for kernel.
 //
 //
@@ -88,7 +90,7 @@ int v_addr_pte_idx(unsigned long v_addr) {
 }
 
 
-void *map_page(unsigned long v_addr, unsigned long phy_addr) {
+void *map_page(unsigned long v_addr, unsigned long phy_addr, unsigned long flags) {
   // When mapping pages we are going to assume you are a great programmer,
   // and have called alloc_page which will give you the physical page that you can make you're
   // virtual address to.
@@ -128,7 +130,7 @@ void *map_page(unsigned long v_addr, unsigned long phy_addr) {
     // Mapping to second page table
     unsigned long flag_mask = 0xFFFFF000;
     unsigned long pt_addr = ((unsigned long)second_page_table & flag_mask);
-    pt_addr = pt_addr | 0x3; //Adding p, w/r
+    pt_addr = pt_addr | flags; //Adding p, w/r
     *page_directory_entry = pt_addr;
   }  
 
@@ -141,7 +143,7 @@ void *map_page(unsigned long v_addr, unsigned long phy_addr) {
   }
 
   unsigned long physical_address = phy_addr & 0xFFFFF000;
-  physical_address = physical_address | 0x1B;
+  physical_address = physical_address | flags;
   kprintf("\nPHY: %ul", physical_address);
   *page_table_entry = physical_address;
   kprintf("%d, %d", pde, pte);
