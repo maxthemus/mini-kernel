@@ -100,6 +100,13 @@ void schedule_task(void (*func)(void)) {
     *--sp = 0; // ESI
     *--sp = 0; // EDI
 
+    *--sp = 0x10;  // gs (kernel data segment)
+    *--sp = 0x10;  // fs
+    *--sp = 0x10;  // es
+    *--sp = 0x10;  // ds
+
+    *--sp = 0; // Trap no
+
     t->esp = (unsigned long)sp;
     t->stack_base = stack;
     t->pid = task_count;
@@ -150,7 +157,6 @@ void block_current_task(enum B_reasons reason) {
     case WAIT_KEYBOARD:
       cur_task->task_state = TASK_BLOCKED; 
       cur_task->blocked_reason = reason;
-      kprintf("YIELD");
       yield();
       break;
     default:

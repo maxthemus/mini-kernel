@@ -105,7 +105,8 @@ idt_set_gate:
     mov word [edi], ax
     mov word [edi+2], 0x08
     mov byte [edi+4], 0
-    mov byte [edi+5], 10001110b
+    ;mov byte [edi+5], 10001110b
+    mov byte [edi+5], 11101110b ; Using user space itr
     shr eax, 16
     mov word [edi+6], ax
 
@@ -132,29 +133,51 @@ isr13:
 ; Timer handleinterrupt.asmr
 irq0:
   pusha
+  push ds
+  push es
+  push fs
+  push gs
+  push 0x1 ; Timer interrupt
 
-  mov al, 0x20
+  mov al, 0x20      ; EOI
   out 0x20, al
 
-  mov eax, esp
-  push eax
-  call schedule
+  push esp
+  call syscall_handler_c   ; returns new kernel_esp in eax
   add esp, 4
 
-  mov esp, eax
+  mov esp, eax      ; switch to new proc's kernel stack
 
+  add esp, 4        ; Removing trap_no from stack
+  pop gs
+  pop fs
+  pop es
+  pop ds
   popa
   iretd
 
 syscall_handler:
   pusha
-  push esp
+  push ds
+  push es
+  push fs
+  push gs
+  push 0x2 ; Timer interrupt
 
-  call syscall_handler_c
+  push esp
+  call syscall_handler_c; returns new kernel_esp in eax
   add esp, 4
 
+  mov esp, eax      ; switch to new proc's kernel stack
+
+  add esp, 4        ; Removing trap_no from stack
+  pop gs
+  pop fs
+  pop es
+  pop ds
   popa
   iretd
+
 
 irq1:
   pusha

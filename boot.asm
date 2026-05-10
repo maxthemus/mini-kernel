@@ -41,6 +41,22 @@ GDT:
 	db 10010010b        ; access
 	db 11001111b        ; granularity
 	db 0                ; base high
+
+	; User code segment
+	dw 0xFFFF
+	dw 0
+	db 0
+	db 11111010b
+	db 11001111b
+	db 0
+
+	; User data segment
+	dw 0xFFFF
+	dw 0
+	db 0
+	db 11110010b
+	db 11001111b
+	db 0
 END_GDT:
 
 ; GDT Pointer
@@ -51,6 +67,8 @@ GDT_PTR:
 ; Location of entries in GDT
 CODE_SEG equ 0x08
 DATA_SEG equ 0x10
+USER_CODE_SEG equ 0x1B
+USER_DATA_SEG equ 0x23
 
 Print16:
 	lodsb
