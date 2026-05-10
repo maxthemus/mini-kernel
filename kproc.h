@@ -57,5 +57,7 @@ void schedule_task(void (*func)(void));
 void init_scheduler(void);
 void block_current_task(enum B_reasons reason);
 void wake_up_tasks(enum B_reasons reason);
+void disable_interrupts(void);
+void enable_interrupts(void);
 
 #endif // !DEBUG

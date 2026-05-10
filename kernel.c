@@ -12,6 +12,14 @@ void terminal_pchar(char c);
 void *alloc_page(void);
 
 
+void task_a(void) {
+  while (1) {
+    for (int i = 0; i < 999999999999; i++) {
+      kprintf("A", i);
+    }
+  }
+}
+
 void shell_task(void) {
   // Shell loop
   // Steps
@@ -42,11 +50,20 @@ void shell_task(void) {
     clear_buffer();
   }
 }
+void idle_task_main(void) {
+  kprintf("IDLE");
+  while (1) {
+  }
+}
 
 void kernel_main(void) {
+  disable_interrupts();
+
   kmalloc_init();
 
   init_scheduler();
+  schedule_task(idle_task_main);
   schedule_task(shell_task);
+  enable_interrupts();
   start_task();
 }

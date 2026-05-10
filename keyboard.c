@@ -23,13 +23,13 @@ void i_keyboard(void) {
 
   if (scancode == 0x1C) {
     kb_push_char('\n');
-    wake_up_tasks(WAIT_KEYBOARD);
+    // wake_up_tasks(WAIT_KEYBOARD);
     return;
   }
 
   if (c) {
     kb_push_char(c);
-    wake_up_tasks(WAIT_KEYBOARD);
+    // wake_up_tasks(WAIT_KEYBOARD);
     return;
   }
 }

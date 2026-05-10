@@ -7,7 +7,6 @@ void run_sti(void);
 void start_tasks(unsigned long stackPtr);
 void halt_system(void);
 void yield(void);
-
 /**
  * Logic for context switching using PIC interrupt handler.
  * 
@@ -52,7 +51,6 @@ void start_task(void) {
 }
 
 unsigned long schedule(unsigned long current_esp) {
-  kprintf("SCHED");
   proc *cur_p = tasks + current_idx;
   cur_p->esp = current_esp;
   // We are coming from interrupt so switch back to running.
@@ -61,7 +59,7 @@ unsigned long schedule(unsigned long current_esp) {
     cur_p->task_state = TASK_READY;
   }
 
-  for (int i = 0; i < task_count + 1; i++) {
+  for (int i = 0; i < task_count; i++) {
     int idx = (current_idx + i + 1) % (task_count);
     proc *p = tasks + idx;
     if (p->task_state == TASK_READY) {
@@ -72,7 +70,39 @@ unsigned long schedule(unsigned long current_esp) {
     }
   } 
 
+  kprintf("BAD IDLE");
   // All procs are currently blocked or no tasks in loop
+  idle_task->task_state = TASK_RUNNING;
+  return idle_task->esp;
+}
+
+unsigned long schedule_syscall(unsigned long current_esp) {
+  proc *cur_p = tasks + current_idx;
+  cur_p->esp = current_esp;
+
+  // We are coming from interrupt so switch back to running.
+  // If we are currently blocked from yield() then we keep it as blocked.
+  if (cur_p->task_state == TASK_RUNNING) {
+    cur_p->task_state = TASK_READY;
+  }
+
+  /*
+  for (int i = 0; i < task_count; i++) {
+    // int idx = (current_idx + i + 1) % (task_count);
+    int idx = i;
+    proc *p = tasks + idx;
+    if (p->task_state == TASK_READY) {
+      p->task_state = TASK_RUNNING;
+      
+      current_idx = idx;
+      return p->esp;
+    }
+  } 
+  */
+
+  // All procs are currently blocked or no tasks in loop
+
+  idle_task->task_state = TASK_RUNNING;
   return idle_task->esp;
 }
 
@@ -107,13 +137,13 @@ void schedule_task(void (*func)(void)) {
     t->run_tick_count = 0;
     t->task_state = TASK_READY;
 
-    task_count++;
+  task_count++;
 }
 
 
 void init_scheduler(void) {
-  // Settingup idle task 
-  proc *t = kmalloc(sizeof(proc));
+  proc *t = (proc *)kmalloc(sizeof(proc));
+
   void *stack = kmalloc(STACK_SIZE);
   unsigned long *sp = (unsigned long *)((char *)stack + STACK_SIZE);
 
@@ -122,7 +152,7 @@ void init_scheduler(void) {
   // -------------------------
   *--sp = 0x202;              // EFLAGS
   *--sp = 0x08;              // CS
-  *--sp = (unsigned long)idle_task;        // EIP
+  *--sp = (unsigned long)idle_task_func;        // EIP
                                       //
   // -------------------------
   // PUSHA frame (must match popa)
@@ -145,21 +175,10 @@ void init_scheduler(void) {
   idle_task = t;
 }
 
-/*
-void disabled_interrupts(void) {
-
-}
-
-void enable_interrupts(void) {
-
-}
-*/
-
 void block_current_task(enum B_reasons reason) {
   proc *cur_task = tasks +current_idx;
-  cur_task->task_state = TASK_BLOCKED; 
-
-  yield();
+  // cur_task->task_state = TASK_BLOCKED; 
+  // yield();
 }
 
 void wake_up_tasks(enum B_reasons reason) {

@@ -7,6 +7,8 @@ global run_sti
 global start_tasks:
 global halt_system
 global yield
+global enable_interrupts
+global disable_interrupts
 
 section .text
 switch_proc:
@@ -52,14 +54,13 @@ halt_system:
 
 ; Same as irq0, interrupt.asm
 yield:
-  pusha
+  int 0x81
 
-  mov eax, esp
-  push eax
-  call schedule
-  add esp, 4
 
-  mov esp, eax
+enable_interrupts:
+ sti
+ ret
 
-  popa
+disable_interrupts:
+  cli
   ret
