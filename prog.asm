@@ -45,12 +45,6 @@ start:
 main:
     ; call fill_green_screen
     sti
-
-   
-    mov esi, wel32Msg 	; Setting PM welcome message to be printed
-	call terminal_write_string	; Printing PM Welcome message
-    call cursor_newline
-
     ; First we need to set our bitmap for memory allocated 
     ; Currently we have kernel code [org 0x90000] index 44
     ; and we have bootloader [org 0x7c00]  index 7

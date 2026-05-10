@@ -1,9 +1,12 @@
 [bits 32]
 
+extern schedule
+
 global switch_proc
 global run_sti
 global start_tasks:
 global halt_system
+global yield
 
 section .text
 switch_proc:
@@ -44,4 +47,19 @@ start_tasks:
 
 halt_system:
   hlt
+  ret
+
+
+; Same as irq0, interrupt.asm
+yield:
+  pusha
+
+  mov eax, esp
+  push eax
+  call schedule
+  add esp, 4
+
+  mov esp, eax
+
+  popa
   ret

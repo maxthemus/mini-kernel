@@ -9,6 +9,10 @@ enum P_state {
   TASK_BLOCKED
 };
 
+enum B_reasons {
+  WAIT_KEYBOARD
+};
+
 typedef struct {
   unsigned long eax;
   unsigned long ebx;
@@ -44,11 +48,14 @@ typedef struct {
 } proc;
 
 
+
 void start_task(void);
 void store_current_proc(unsigned long stackAddr);
 unsigned long load_next_proc(void);
 unsigned long schedule(unsigned long current_esp);
 void schedule_task(void (*func)(void));
 void init_scheduler(void);
+void block_current_task(enum B_reasons reason);
+void wake_up_tasks(enum B_reasons reason);
 
 #endif // !DEBUG

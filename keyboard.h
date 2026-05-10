@@ -5,5 +5,6 @@
 
 char kb_pop_char(void);
 int has_char(void);
+char get_char(void);
 
 #endif

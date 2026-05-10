@@ -6,6 +6,7 @@
 void run_sti(void);
 void start_tasks(unsigned long stackPtr);
 void halt_system(void);
+void yield(void);
 
 /**
  * Logic for context switching using PIC interrupt handler.
@@ -41,15 +42,9 @@ int running = 0;
 void idle_task_func(void) {
   kprintf("IDLE TASK");
   while (1) {
-    halt_system();
+    // halt_system();
   }
 }
-
-
-
-// 1 2 3 4 5 6 7 8 9
-//               A  x
-
 
 void start_task(void) {
   tasks[0].task_state = TASK_RUNNING;
@@ -57,20 +52,22 @@ void start_task(void) {
 }
 
 unsigned long schedule(unsigned long current_esp) {
-  kprintf("\nTIMER, A%d->", current_idx); // save current task state
+  kprintf("SCHED");
   proc *cur_p = tasks + current_idx;
   cur_p->esp = current_esp;
-  cur_p->task_state = TASK_READY;
+  // We are coming from interrupt so switch back to running.
+  // If we are currently blocked from yield() then we keep it as blocked.
+  if (cur_p->task_state == TASK_RUNNING) {
+    cur_p->task_state = TASK_READY;
+  }
 
   for (int i = 0; i < task_count + 1; i++) {
     int idx = (current_idx + i + 1) % (task_count);
-    kprintf("B%d->", idx);
     proc *p = tasks + idx;
     if (p->task_state == TASK_READY) {
-      p->task_state == TASK_RUNNING;
+      p->task_state = TASK_RUNNING;
       
       current_idx = idx;
-      kprintf("C%d", idx);
       return p->esp;
     }
   } 
@@ -119,9 +116,17 @@ void init_scheduler(void) {
   proc *t = kmalloc(sizeof(proc));
   void *stack = kmalloc(STACK_SIZE);
   unsigned long *sp = (unsigned long *)((char *)stack + STACK_SIZE);
-  *--sp = 0x202; // EFLAGS
-  *--sp = 0x08;  // CS
-  *--sp = (unsigned long)idle_task_func; // EIP
+
+  // -------------------------
+  // IRET frame
+  // -------------------------
+  *--sp = 0x202;              // EFLAGS
+  *--sp = 0x08;              // CS
+  *--sp = (unsigned long)idle_task;        // EIP
+                                      //
+  // -------------------------
+  // PUSHA frame (must match popa)
+  // -------------------------
   *--sp = 0; // EAX
   *--sp = 0; // ECX
   *--sp = 0; // EDX
@@ -130,14 +135,39 @@ void init_scheduler(void) {
   *--sp = 0; // EBP
   *--sp = 0; // ESI
   *--sp = 0; // EDI
-             //
-  t->esp = (unsigned long)stack;
+
+  t->esp = (unsigned long)sp;
   t->stack_base = stack;
   t->pid = 10;
   t->run_tick_count = 0;
   t->task_state = TASK_READY;
 
-  idle_task = t; //Storing idle task
+  idle_task = t;
 }
 
+/*
+void disabled_interrupts(void) {
+
+}
+
+void enable_interrupts(void) {
+
+}
+*/
+
+void block_current_task(enum B_reasons reason) {
+  proc *cur_task = tasks +current_idx;
+  cur_task->task_state = TASK_BLOCKED; 
+
+  yield();
+}
+
+void wake_up_tasks(enum B_reasons reason) {
+  for (int i = 0; i < task_count + 1; i++) {
+    proc *p = tasks + i;
+    if (p->task_state == TASK_BLOCKED) {
+      p->task_state = TASK_READY;
+    }
+  }
+}
 

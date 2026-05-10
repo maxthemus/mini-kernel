@@ -11,39 +11,8 @@ void terminal_pchar(char c);
 
 void *alloc_page(void);
 
-void task_a(void) {
-  while (1) {
-    //run_sti();
-    kprintf("A");
-    for (int i = 0; i < 999999; i++) {}
-  }
-}
 
-
-void task_b(void) {
-  while (1) {
-    //run_sti();
-    kprintf("B");
-    for (int i = 0; i < 999999; i++) {}
-  }
-}
-
-void kernel_main(void) {
-	char greetings[] = "Hello World!";
-	unsigned long int len = 12;
-	terminal_write(greetings, len);
-
-  char str[] = "a";
-  unsigned long test = 100;
-  kprintf("bcccc%d, %ul", 200, test);
-
-  kmalloc_init();
-
-  init_scheduler();
-  schedule_task(task_a);
-  schedule_task(task_b);
-  start_task();
-
+void shell_task(void) {
   // Shell loop
   // Steps
   // 1- Prompt
@@ -51,23 +20,20 @@ void kernel_main(void) {
   // 3- parse command
   // 4- exec command
   // 5- clear buffer
-  /*
   while (1) {
     print_prompt();
 
     int command_complete = 0;
     while (!command_complete) {
-      if (has_char()) {
-        char c = kb_pop_char();
-        switch (c) {
-          case '\n':
-            command_complete = 1;
-            kprintf("\n");
-            break;
-          default:
-            kprintf("%c", c);
-            add_char(c);
-        }
+      char c = get_char();
+      switch (c) {
+        case '\n':
+          command_complete = 1;
+          kprintf("\n");
+          break;
+        default:
+          kprintf("%c", c);
+          add_char(c);
       }
     }
 
@@ -75,5 +41,12 @@ void kernel_main(void) {
     execute_command();
     clear_buffer();
   }
-  */
+}
+
+void kernel_main(void) {
+  kmalloc_init();
+
+  init_scheduler();
+  schedule_task(shell_task);
+  start_task();
 }

@@ -123,22 +123,20 @@ isr13:
 ; IRQ handlers
 ; Timer handleinterrupt.asmr
 irq0:
-    pusha
+  pusha
 
-    mov al, 0x20
-    out 0x20, al
+  mov al, 0x20
+  out 0x20, al
 
-    mov eax, esp
-    push eax
-    call schedule
-    add esp, 4
+  mov eax, esp
+  push eax
+  call schedule
+  add esp, 4
 
-    
+  mov esp, eax
 
-    mov esp, eax
-
-    popa
-    iretd
+  popa
+  iretd
 
 irq1:
   pusha

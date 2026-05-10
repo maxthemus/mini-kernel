@@ -1,5 +1,6 @@
 #include "kprintf.h"
 #include "keyboard.h"
+#include "kproc.h"
 
 char kb_buffer[KB_BUFFER_SIZE];
 volatile unsigned int head = 0;
@@ -22,11 +23,13 @@ void i_keyboard(void) {
 
   if (scancode == 0x1C) {
     kb_push_char('\n');
+    wake_up_tasks(WAIT_KEYBOARD);
     return;
   }
 
   if (c) {
     kb_push_char(c);
+    wake_up_tasks(WAIT_KEYBOARD);
     return;
   }
 }
@@ -55,4 +58,11 @@ char kb_pop_char(void) {
 
 int has_char(void) {
   return head != tail;
+}
+
+char get_char(void) {
+  while (!has_char()) {
+    block_current_task(WAIT_KEYBOARD);
+  }
+  return kb_pop_char();
 }
