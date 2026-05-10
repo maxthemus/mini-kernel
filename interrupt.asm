@@ -3,7 +3,7 @@
 extern i_keyboard
 extern i_timer_handler
 extern schedule
-extern schedule_syscall
+extern syscall_handler_c
 
 global clear_timer_interrupt
 
@@ -84,9 +84,9 @@ idt_init:
     ; Setting interrupt for syscall.
     ; Currently just using for yield
     ; But will migrate to a generic handler
-    ;mov eax, syscall_handler
-    ;mov ebx, 0x81
-    ;call idt_set_gate
+    mov eax, syscall_handler
+    mov ebx, 0x81
+    call idt_set_gate
     
     ret
 
@@ -148,13 +148,10 @@ irq0:
 
 syscall_handler:
   pusha
+  push esp
 
-  mov eax, esp
-  push eax
-  call schedule_syscall
+  call syscall_handler_c
   add esp, 4
-
-  mov esp, eax
 
   popa
   iretd

@@ -35,7 +35,6 @@ int task_count = 0;
 int current_task = 0;
 proc tasks[5];
 proc *idle_task;
-context *sched_ctx;
 int running = 0;
 
 void idle_task_func(void) {
@@ -72,36 +71,6 @@ unsigned long schedule(unsigned long current_esp) {
 
   kprintf("BAD IDLE");
   // All procs are currently blocked or no tasks in loop
-  idle_task->task_state = TASK_RUNNING;
-  return idle_task->esp;
-}
-
-unsigned long schedule_syscall(unsigned long current_esp) {
-  proc *cur_p = tasks + current_idx;
-  cur_p->esp = current_esp;
-
-  // We are coming from interrupt so switch back to running.
-  // If we are currently blocked from yield() then we keep it as blocked.
-  if (cur_p->task_state == TASK_RUNNING) {
-    cur_p->task_state = TASK_READY;
-  }
-
-  /*
-  for (int i = 0; i < task_count; i++) {
-    // int idx = (current_idx + i + 1) % (task_count);
-    int idx = i;
-    proc *p = tasks + idx;
-    if (p->task_state == TASK_READY) {
-      p->task_state = TASK_RUNNING;
-      
-      current_idx = idx;
-      return p->esp;
-    }
-  } 
-  */
-
-  // All procs are currently blocked or no tasks in loop
-
   idle_task->task_state = TASK_RUNNING;
   return idle_task->esp;
 }
@@ -176,16 +145,26 @@ void init_scheduler(void) {
 }
 
 void block_current_task(enum B_reasons reason) {
-  proc *cur_task = tasks +current_idx;
-  // cur_task->task_state = TASK_BLOCKED; 
-  // yield();
+  proc *cur_task = tasks + current_idx;
+  switch (reason) {
+    case WAIT_KEYBOARD:
+      cur_task->task_state = TASK_BLOCKED; 
+      cur_task->blocked_reason = reason;
+      kprintf("YIELD");
+      yield();
+      break;
+    default:
+      kprintf("\nBLOCKED GIVEN INVALID REASON\n");
+  }
 }
 
 void wake_up_tasks(enum B_reasons reason) {
   for (int i = 0; i < task_count + 1; i++) {
     proc *p = tasks + i;
     if (p->task_state == TASK_BLOCKED) {
-      p->task_state = TASK_READY;
+      if (p->blocked_reason == reason) {
+        p->task_state = TASK_READY;
+      }
     }
   }
 }
