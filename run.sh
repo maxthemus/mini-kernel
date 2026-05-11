@@ -14,11 +14,6 @@ gcc -m32 -ffreestanding -fno-pie -fno-stack-protector -c mem.c -o mem.o
 gcc -m32 -ffreestanding -fno-pie -fno-stack-protector -c syscall.c -o syscall.o
 gcc -m32 -ffreestanding -fno-pie -fno-stack-protector -c gdt.c -o gdt.o
 
-# Compile user scripts
-user_prog.bin: user_prog.c
-    gcc -m32 -ffreestanding -nostdlib -o user_prog.elf user_prog.c
-    objcopy -O binary user_prog.elf user_prog.bin
-
 # Linking scripts together
 ld -m elf_i386 -T linker.ld -o kernel.elf prog.o kernel.o kheap.o kprintf.o keyboard.o kshell.o timer.o kproc.o proc.o mem.o syscall.o gdt.o
 

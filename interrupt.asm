@@ -86,7 +86,8 @@ idt_init:
     ; But will migrate to a generic handler
     mov eax, syscall_handler
     mov ebx, 0x81
-    call idt_set_gate
+    ;call idt_set_gate
+    call idt_set_gate_user
     
     ret
 
@@ -110,6 +111,24 @@ idt_set_gate:
     shr eax, 16
     mov word [edi+6], ax
 
+    popa
+    ret
+
+; idt_set_gate_user
+; eax = handler address
+; ebx = vector
+idt_set_gate_user:
+    pusha
+    mov edi, idt
+    mov ecx, ebx
+    shl ecx, 3
+    add edi, ecx
+    mov word [edi], ax
+    mov word [edi+2], 0x08      ; User code segment selector
+    mov byte [edi+4], 0
+    mov byte [edi+5], 11101110b ; P=1, DPL=3, Type=0xE (32-bit interrupt gate)
+    shr eax, 16
+    mov word [edi+6], ax
     popa
     ret
 
@@ -162,7 +181,7 @@ syscall_handler:
   push es
   push fs
   push gs
-  push 0x2 ; Timer interrupt
+  push eax
 
   push esp
   call syscall_handler_c; returns new kernel_esp in eax

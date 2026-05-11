@@ -214,27 +214,36 @@ print_counter:
 ; jump_usermode.asm
 global jump_usermode
 jump_usermode:
-    mov eax, [esp+4]    ; user esp
-    mov ecx, [esp+8]    ; user eip
-
-    push eax            ; save user esp before clobbering ax
-    
     mov ax, 0x23
     mov ds, ax
     mov es, ax
     mov fs, ax
     mov gs, ax
+    push 0x23           ; SS
+    push dword [esp+8]  ; user ESP
+    pushf
+    pop eax
+    or eax, 0x200       ; IF set
+    push eax
+    push 0x1B           ; user CS
+    push dword [esp+20] ; EIP  <-- needs dword
+    iret
 
-    pop eax             ; restore user esp
+global user_program_finish
+global user_program_start
+user_program_start:
+user_loop:
+  mov eax, 3
+  int 0x81
+  ;mov eax, 0x90000
+  ;mov ebx,[eax]
+  jmp user_loop
+user_program_finish:
 
-    push 0x23           ; user ss
-    push eax            ; user esp
-    push 0x202          ; eflags
-    push 0x1B           ; user cs
-    push ecx            ; eip
-    iretd
 
 freeze:
+  mov eax, 3
+  int 0x81
 	jmp freeze
 
 %include "cursor.asm"

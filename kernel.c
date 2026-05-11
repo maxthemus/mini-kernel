@@ -16,6 +16,9 @@ void jump_usermode(unsigned long esp, unsigned long eip);
 
 void *alloc_page(void);
 
+void user_program_start(void);
+void user_program_finish(void);
+
 
 void task_a(void) {
   while (1) {
@@ -62,6 +65,7 @@ void idle_task_main(void) {
 }
 
 
+/*
 void launch_user_mode(void) {
   void *user_stack = kmalloc(STACK_SIZE);
   unsigned long esp = (unsigned long)user_stack + STACK_SIZE;
@@ -75,6 +79,7 @@ void launch_user_mode(void) {
 
   jump_usermode(esp, eip);
 }
+*/
 
 // This is actually called by prog.asm
 void kernel_setup(void) {
@@ -87,10 +92,29 @@ void kernel_main(void) {
   setup_tss();
   kmalloc_init();
 
-  init_scheduler();
   schedule_task(idle_task_main);
+
+
+  unsigned long size = (unsigned long)(&user_program_finish - &user_program_start);
+  void *user_prog_stack = alloc_page();
+  unsigned char *user_prog_stack_base = ((unsigned char*)user_prog_stack) + 4096;
+  unsigned char *user_prog_code = (unsigned char*)alloc_page();
+  memcp(user_prog_code, user_program_start, size);
+
+  map_page((unsigned long)user_prog_stack, (unsigned long)user_prog_stack, PAGE_PRESENT | PAGE_WRITE | PAGE_USER);
+  map_page((unsigned long)user_prog_code, (unsigned long)user_prog_code, PAGE_PRESENT | PAGE_USER);
+
+  proc *current_proc = get_proc(0);
+  tss.esp0 = current_proc->kernel_stack_base;
+
+
+
+  init_scheduler();
   // schedule_task(shell_task);
   enable_interrupts();
-  launch_user_mode();
+  jump_usermode((unsigned long)user_prog_stack_base, (unsigned long)user_prog_code);
   // start_task();
+  //
+  kprintf("\nKERNEL DONE");
+  while(1) { }
 }

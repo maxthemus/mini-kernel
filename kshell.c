@@ -1,6 +1,7 @@
 #include "kshell.h"
 #include "kprintf.h"
 #include "kheap.h"
+#include "mem.h"
 #include "timer.h"
 
 // ASM defs
@@ -13,11 +14,12 @@ void k_heap_dump(void);
 void print_ticks(void);
 
 char in_buffer[K_SHELL_BUFFER_SIZE];
-static int NUM_COMMANDS = 3;
+static int NUM_COMMANDS = 4;
 command_t commands[] = {
   {"clear", clear_screen},
   {"hdump", k_heap_dump},
-  {"uptime", print_ticks}
+  {"uptime", print_ticks},
+  {"pdump", print_alloc_pages}
 };
 
 volatile unsigned int buf_idx;

@@ -1,6 +1,8 @@
 #include "mem.h"
 #include "kprintf.h"
 
+#define PAGE_MASK  0xFFFFF000
+#define FLAG_MASK  0x00000FFF
 
 
 // File is for managing memory for kernel.
@@ -75,6 +77,12 @@ void *memset(void *ptr, int c, unsigned long size) {
   }
 }
 
+void memcp(void *dest, void *src, unsigned long size) {
+  for (unsigned long i = 0; i < size; i++) {
+    *((unsigned char *)dest + i) = *((unsigned char *)src + i);
+  }
+}
+
 void print_page_dir() {
 
 }
@@ -84,9 +92,7 @@ int v_addr_pde_idx(unsigned long v_addr) {
 }
 
 int v_addr_pte_idx(unsigned long v_addr) {
-  unsigned long mask = 4095;
-  unsigned long masked = v_addr & mask;
-  return (int)(masked >> 10);
+  return (v_addr >> 12) & 0x3FF;
 }
 
 
@@ -132,13 +138,20 @@ void *map_page(unsigned long v_addr, unsigned long phy_addr, unsigned long flags
     unsigned long pt_addr = ((unsigned long)second_page_table & flag_mask);
     pt_addr = pt_addr | flags; //Adding p, w/r
     *page_directory_entry = pt_addr;
-  }  
+  } else {
+    // Updating the entry to be user writable
+    *page_directory_entry = (*page_directory & PAGE_MASK) | (flags & (0x1 | 0x2 | 0x4));
+  }
+
 
    
   unsigned long *page_table_addr = (unsigned long*)((*page_directory_entry) & 0xFFFFF000);
   unsigned long *page_table_entry = page_table_addr + pte;
   if ((*page_table_entry) & 0x1) {
-    kprintf("\nPAGE TABLE Entry already exists");
+    kprintf("\nPAGE TABLE Entry already exists: PTE:%d->%d, %ul, VADDR:%ul\n", pde, pte, page_table_entry, v_addr);
+    // If it exists we are going to override the flags.
+    // Just for now for testing purposes.
+    *page_table_entry = (*page_table_entry & PAGE_MASK) | (flags & FLAG_MASK);
     return (void*)-1;
   }
 
