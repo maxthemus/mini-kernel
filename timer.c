@@ -4,7 +4,6 @@
 static volatile unsigned long ticks = 0;
 
 void i_timer_handler(void) {
-  kprintf("TIMER");
   ticks++;
 }
 

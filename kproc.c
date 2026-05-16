@@ -8,6 +8,8 @@ void run_sti(void);
 void start_tasks(unsigned long stackPtr);
 void halt_system(void);
 void yield(void);
+proc *get_cur_proc(void);
+
 /**
  * Logic for context switching using PIC interrupt handler.
  * 
@@ -33,15 +35,12 @@ void yield(void);
 int current_idx = 0;
 int task_count = 0;
 
-int current_task = 0;
 proc tasks[5];
 proc *idle_task;
-int running = 0;
 
 void idle_task_func(void) {
-  kprintf("IDLE TASK");
   while (1) {
-    // halt_system();
+    // kprintf("I");
   }
 }
 
@@ -59,6 +58,11 @@ unsigned long schedule(unsigned long current_esp) {
     cur_p->task_state = TASK_READY;
   }
 
+  if (cur_p->task_state == TASK_DEAD) {
+    kprintf("MOVING FROM DEAD");
+  }
+
+
   for (int i = 0; i < task_count; i++) {
     int idx = (current_idx + i + 1) % (task_count);
     proc *p = tasks + idx;
@@ -66,16 +70,20 @@ unsigned long schedule(unsigned long current_esp) {
       p->task_state = TASK_RUNNING;
       
       current_idx = idx;
-      tss.esp0 = cur_p->kernel_stack_base;
+      tss.esp0 = p->kernel_stack_base;
+      // kprintf("i:%d", idx);
       return p->esp;
     }
   } 
 
-  kprintf("BAD IDLE");
+  // kprintf("IDLE");
   // All procs are currently blocked or no tasks in loop
   idle_task->task_state = TASK_RUNNING;
-  tss.esp0 = cur_p->kernel_stack_base;
+  tss.esp0 = idle_task->kernel_stack_base;
   return idle_task->esp;
+  //cur_p->task_state = TASK_RUNNING;
+  //tss.esp0 = cur_p->kernel_stack_base;
+  //return cur_p->esp;
 }
 
 void schedule_task(void (*func)(void)) {
@@ -147,6 +155,13 @@ void init_scheduler(void) {
   *--sp = 0; // ESI
   *--sp = 0; // EDI
 
+  *--sp = 0x10;  // gs (kernel data segment)
+  *--sp = 0x10;  // fs
+  *--sp = 0x10;  // es
+  *--sp = 0x10;  // ds
+
+  *--sp = 0; // Trap no
+
   t->esp = (unsigned long)sp;
   t->stack_base = stack;
   t->pid = 10;
@@ -182,4 +197,8 @@ void wake_up_tasks(enum B_reasons reason) {
 
 proc* get_proc(int idx) {
   return &tasks[idx];
+}
+
+proc* get_cur_proc(void) {
+  return &tasks[current_idx];
 }

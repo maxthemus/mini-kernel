@@ -6,7 +6,8 @@
 enum P_state {
   TASK_READY,
   TASK_RUNNING,
-  TASK_BLOCKED
+  TASK_BLOCKED,
+  TASK_DEAD
 };
 
 enum B_reasons {
@@ -37,6 +38,7 @@ void wake_up_tasks(enum B_reasons reason);
 void disable_interrupts(void);
 void enable_interrupts(void);
 proc *get_proc(int idx);
+proc *get_cur_proc(void);
 
 
 #endif // !DEBUG

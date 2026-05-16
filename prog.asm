@@ -242,8 +242,6 @@ user_program_finish:
 
 
 freeze:
-  mov eax, 3
-  int 0x81
 	jmp freeze
 
 %include "cursor.asm"

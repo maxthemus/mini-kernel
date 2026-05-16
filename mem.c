@@ -3,6 +3,7 @@
 
 #define PAGE_MASK  0xFFFFF000
 #define FLAG_MASK  0x00000FFF
+#define PAGE_SIZE  4096
 
 
 // File is for managing memory for kernel.
@@ -132,10 +133,14 @@ void *map_page(unsigned long v_addr, unsigned long phy_addr, unsigned long flags
 
   unsigned long *page_directory_entry = (page_directory + pde);
   if (!(*page_directory_entry & 0x1)) {
-    // Directory doesn't have entry.
-    // Mapping to second page table
+    // If entry doesn't exist we need to 
+    // - Allocate page for new p_table.
+    // - Zero out allocated page.
+    // - Create p_dir entry for page table.
+    unsigned long *new_page_table_addr = (unsigned long*)alloc_page();
+    memset(new_page_table_addr, 0, PAGE_SIZE);
     unsigned long flag_mask = 0xFFFFF000;
-    unsigned long pt_addr = ((unsigned long)second_page_table & flag_mask);
+    unsigned long pt_addr = ((unsigned long)new_page_table_addr & flag_mask);
     pt_addr = pt_addr | flags; //Adding p, w/r
     *page_directory_entry = pt_addr;
   } else {

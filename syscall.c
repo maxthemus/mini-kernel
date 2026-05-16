@@ -3,6 +3,8 @@
 
 #define SYS_TIMER 0x1
 #define SYS_YIELD 0x2
+#define SYS_TEST  0x3
+#define SYS_EXIT  0x4
 
 typedef struct trap_frame {
   // pushed last (lowest address), popped first
@@ -35,17 +37,33 @@ typedef struct trap_frame {
 } trap_frame;
 
 unsigned long syscall_handler_c(trap_frame *tf) {
+  disable_interrupts();
+
   // First we are going to start by handling the yield syscall.
   if (tf->trap_no == SYS_TIMER || tf->trap_no == SYS_TIMER) {
     unsigned long current_esp = (unsigned long)tf;
     unsigned long trap_no = tf->trap_no;
+
+    enable_interrupts();
     return schedule(current_esp);  
   } 
 
-  if (tf->trap_no == 3) {
-    kprintf("SYSCALL EXTRA");
+  if (tf->trap_no == SYS_TEST) {
+    kprintf("SYSCALL TEST");
+
+    enable_interrupts();
+    return (unsigned long)tf; // Returning current tf
   }
 
+  if (tf->trap_no == SYS_EXIT) {
+    kprintf("SYSCALL EXIT");
+    proc *cur_proc = get_cur_proc();
+    cur_proc->task_state = TASK_DEAD;
+    unsigned long current_esp = (unsigned long)tf;
+
+    enable_interrupts();
+    return schedule(current_esp);
+  }
 
   return (unsigned long)tf; // Returning current tf
 }
