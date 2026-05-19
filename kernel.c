@@ -93,7 +93,7 @@ void kernel_main(void) {
   setup_tss();
   kmalloc_init();
 
-  schedule_task(task_a);
+  // schedule_task(task_a);
   schedule_task(idle_task_main);
 
 
@@ -106,24 +106,24 @@ void kernel_main(void) {
   read_sector(1025, user_prog_code);
 
 
-  map_page((unsigned long)user_prog_stack, (unsigned long)user_prog_stack, PAGE_PRESENT | PAGE_WRITE | PAGE_USER);
-  map_page((unsigned long)user_prog_code, (unsigned long)user_prog_code, PAGE_PRESENT | PAGE_USER);
+  // map_page((unsigned long)user_prog_stack, (unsigned long)user_prog_stack, PAGE_PRESENT | PAGE_WRITE | PAGE_USER);
+  // map_page((unsigned long)user_prog_code, (unsigned long)user_prog_code, PAGE_PRESENT | PAGE_USER);
 
-  proc *current_proc = get_proc(0);
-  tss.esp0 = current_proc->kernel_stack_base;
-
+  // proc *current_proc = get_proc(0);
+  // tss.esp0 = current_proc->kernel_stack_base;
 
 
   kprintf("\nSTART\n");
   init_scheduler();
+  schedule_task((void (*)(void))user_prog_code);
   schedule_task(shell_task);
 
-  proc *task_a = get_proc(0);
-  task_a->task_state = TASK_RUNNING;
+  // proc *task_a = get_proc(0);
+  // task_a->task_state = TASK_RUNNING;
 
   enable_interrupts();
-  jump_usermode((unsigned long)user_prog_stack_base, (unsigned long)user_prog_code);
-  // start_task();
+  // jump_usermode((unsigned long)user_prog_stack_base, (unsigned long)user_prog_code);
+  start_task();
   //
   kprintf("\nKERNEL DONE");
   while(1) { }

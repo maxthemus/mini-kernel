@@ -112,10 +112,11 @@ void schedule_task(void (*func)(void)) {
     *--sp = 0; // ESI
     *--sp = 0; // EDI
 
-    *--sp = 0x10;  // gs (kernel data segment)
-    *--sp = 0x10;  // fs
-    *--sp = 0x10;  // es
-    *--sp = 0x10;  // ds
+    // Kernel is 0x10
+    *--sp = 0x23;  // gs (kernel data segment)
+    *--sp = 0x23;  // fs
+    *--sp = 0x23;  // es
+    *--sp = 0x23;  // ds
 
     *--sp = 0; // Trap no
 
